@@ -1,0 +1,6 @@
+features of voice ai
+1. News Headlines
+2. sending whatsapp message
+3. Username and Privacy
+4. News in over 100 language
+5. Search songs and youtube playlist 
