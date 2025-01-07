@@ -12,16 +12,25 @@ from googletrans import Translator
 # for youtube song 
 from youtube_search import YoutubeSearch
 import webbrowser as wb
+# for database 
+import database1
+
+one_time_password = ""
+lang = "en"
+
+trans = Translator()
+
+def detect_language(text):
+    # Detect the language 
+    detection = trans.detect(text) 
+    return detection.lang 
 
 
 
-user = {
-    "admin" : "admin"
-}
-
-def trans(text, dest = "hi", src = "en"):
-    trans = Translator()
-    trans1 = trans.translate(text, src="en", dest="hi")
+def transla(text, dest='en'):
+    global lang 
+    lang = detect_language(text)
+    trans1 = trans.translate(text,lang)
     return trans1.text
     
 def song(query):
@@ -40,6 +49,7 @@ def song(query):
 
 
 def ev(er):
+    global one_time_password
     es = 'dj20101004@gmail.com'
     # er = 'dhruvjainmyself@gmail.com'
     epw = 'wqdj xtan coeo dtmx'
@@ -64,7 +74,7 @@ def ev(er):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context= context) as smtp:
         smtp.login(es, epw)
         smtp.sendmail(es, er, em.as_string())
-    
+    one_time_password = otp
     return otp
 
 
@@ -82,7 +92,7 @@ def new_entry():
         while True:
             vcode = input("Enter the verification code : ")
             if vcode == code:
-                user[name] = pw
+                database1.user_info_database(uname = name, email=email, pw=pw)
                 speak("Your account is created successfully")
                 break
             else:
@@ -90,6 +100,7 @@ def new_entry():
 
 #it was used for the speaking 
 def speak(text):
+    text = trans(text, lang)
     engine = pyttsx3.init()
     id =  r'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_DAVID_11.0'
     engine.setProperty('voice',id)
@@ -109,7 +120,8 @@ def sinput():
 
     try:
         print("Recognizing.................")
-        query = r.recognize_google(audio,language="en")
+        query = r.recognize_google(audio,language="auto")
+        query = transla(query)
         return query.lower()
     
     except:
@@ -117,34 +129,45 @@ def sinput():
 
 def main():
     start = 0
+    choice = 0
+    count = 0
     if start == 0:
         speak("hii sir i am jarvis 1 point 0")
         speak("Sir can you please tell me ur good name ")
         uname = sinput()
-        users_name = user.keys()
-        if uname in users_name:
-            speak(f"Welcome {uname} sir")
-            while True:
-                speak("Enter the password")
-                password = input()
-                if password != user[uname]:
-                    speak("Incorrect password")
-                    speak("Sir if you forgot the password then tell yes or retry with old password then tell no ")
-                    pchoice = sinput()
-                    if pchoice == "yes":
-                        speak("Sir please enter the email id :")
-                        email = input()
-                        # on the entered email send a forget password email.
-                        break
+        if uname == "":
+            uname = input("ENter teh name : ")
+        if database1.check_user(uname):
+            speak("Welcome back sir")
+            while choice == 0 and count < 3:
+            # speak("Enter the password")
+                count = count + 1
+                pw = input("PASSWORD : ")
+                if database1.check_password(uname) == pw:
+                    pass
                 else:
-                    break
-        else:
-            new_entry()
-            
-    speak("Welcme mister ", uname )
+                    speak("Incorrect password")
+                    speak("If you want to update ur password then enter 1 else enter 0")
+                    choice = sinput()
+                    if choice == 1:
+                        ev(database1.getemail(uname))
+                        speak("Enter the otp : ")
+                        if input("OTP : ") == one_time_password:
+                            speak("Enter new Password")
+                            pw = input("New PassWord")
+                            con_pw = input("Confirm PassWord")
+                            if pw == con_pw:
+                                database1.update_password(uname, pw)
+                if count == 2:
+                    choice = 1
+                
+    else:
+        new_entry()
+    wish = "welcome mister" + uname
+    speak(wish )
     speak("How can i help you today ?")
     query = sinput()
-    if 'headlines' in query():             
+    if 'headlines' in query or 'news' in query:             
         ans = nd.fn()
         speak("Sir in which language you want to listen the news : ")
         lang = sinput()
@@ -155,3 +178,9 @@ def main():
         wp.what(query)
     elif 'play' in query:
         song(query)
+    elif 'bye' in query or 'shutdown' in query:
+        exit()
+
+
+if __name__ == "__main__":
+    main()
