@@ -1,0 +1,5 @@
+features of voice ai
+1. News Headlines
+2. Sending WhatsApp message
+3. Username and Privacy
+4. Email Verification
