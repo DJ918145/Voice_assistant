@@ -3,3 +3,5 @@ features of voice ai
 2. Sending WhatsApp message
 3. Username and Privacy
 4. Email Verification
+5. Weather Details
+6. Making Notes
